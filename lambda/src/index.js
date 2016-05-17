@@ -23,13 +23,24 @@ EchoSonos.prototype.intentHandlers = {
     // register custom intent handlers
     PlayIntent: function (intent, session, response) {
         console.log("PlayIntent received");
-        options.path = '/preset/' + encodeURIComponent(intent.slots.Preset.value);
-        httpreq(options, function(error) {
-            genericResponse(error, response);
-        });
+        spotifyHandler(
+            intent.slots.SearchTerm.value,
+            intent.slots.MusicType.value,
+            intent.slots.Room.value,
+            response);
     },
 
-    PlaylistIntent: function (intent, session, response) {  
+    BringMusicIntent: function(intent, session, response) {
+        console.log("BringMusicIntent received");
+        bringMusicHandler(intent.slots.Room.value, response);
+    },
+
+    DropRoomIntent: function(intent, session, response) {
+        console.log("DropRoomIntent received");
+        dropRoomHandler(intent.slots.Room.value, response);
+    },
+
+    PlaylistIntent: function (intent, session, response) {
         console.log("PlaylistIntent received");
         playlistHandler(intent.slots.Room.value, intent.slots.Preset.value, 'playlist', response);
     },
@@ -54,7 +65,7 @@ EchoSonos.prototype.intentHandlers = {
             genericResponse(error, response);
         });
     },
-    
+
     PauseAllIntent: function (intent, session, response) {
         console.log("PauseAllIntent received");
         options.path = '/pauseAll';
@@ -112,7 +123,7 @@ EchoSonos.prototype.intentHandlers = {
                 var responseText = STATE_RESPONSES[randResponse].replace("$currentTitle", responseJson.currentTrack.title).replace("$currentArtist", responseJson.currentTrack.artist);
                 response.tell(responseText);
             }
-            else { 
+            else {
                 response.tell(error.message);
             }
         });
@@ -157,17 +168,58 @@ EchoSonos.prototype.intentHandlers = {
     },
 }
 
+function spotifyHandler(searchTerm, musicType, roomValue, response) {
+    var path = '/spotify/' + musicType + '/' + encodeURIComponent(searchTerm);
+
+    // This first action queues up the spotify search
+    actOnCoordinator(options, path, roomValue, function(error, responseBodyJson) {
+        if (error) {
+            genericResponse(error, response);
+            return;
+        }
+        // The 2nd action actually plays the playlist / favorite
+        actOnCoordinator(options, '/play', roomValue, function(error, responseBodyJson) {
+            genericResponse(error, response, "Playing " + searchTerm);
+        });
+    });
+
+}
+
+function bringMusicHandler(roomValue, response) {
+    options.path = '/' + encodeURIComponent(roomValue) + '/joinplaying/';
+    httpreq(options, function(error) {
+        if (!error) {
+            response.tell("Added " + roomValue + " to the group");
+        }
+        else {
+          response.tell(error.message);
+        }
+    });
+}
+
+function dropRoomHandler(roomValue, response) {
+    options.path = '/' + encodeURIComponent(roomValue) + '/isolate/';
+    httpreq(options, function(error) {
+        if (!error) {
+            response.tell("Dropped " + roomValue + " from the group");
+        }
+        else {
+          response.tell(error.message);
+        }
+    });
+}
+
 /** Handles playlists and favorites */
 function playlistHandler(roomValue, presetValue, skillName, response) {
     var skillPath = '/' + skillName + '/' + encodeURIComponent(presetValue);
-    
+
     // This first action queues up the playlist / favorite, and it shouldn't say anything unless there's an error
     actOnCoordinator(options, skillPath, roomValue, function(error, responseBodyJson) {
         if (error) {
             genericResponse(error, response);
         }
     });
-    
+
     // The 2nd action actually plays the playlist / favorite
     actOnCoordinator(options, '/play', roomValue, function(error, responseBodyJson) {
         genericResponse(error, response, "Queued and started " + presetValue);
@@ -187,7 +239,7 @@ function toggleHandler(roomValue, toggleValue, skillName, response) {
         if (!error) {
             response.tell("Turned " + skillName + " " + toggleValue + " in " + roomValue);
         }
-        else { 
+        else {
           response.tell(error.message);
         }
     });
@@ -246,16 +298,16 @@ function parseRoomAndGroup(roomArgument) {
 
 function httpreq(options, responseCallback) {
     var transport = options.useHttps ? https : http;
-    
+
     console.log("Sending " + (options.useHttps ? "HTTPS" : "HTTP" ) + " request to: " + options.path);
-  
+
     var req = transport.request(options, function(httpResponse) {
         var body = '';
-        
+
         httpResponse.on('data', function(data) {
             body += data;
         });
-        
+
         httpResponse.on('end', function() {
             responseCallback(undefined, body);
         });
@@ -269,20 +321,20 @@ function httpreq(options, responseCallback) {
 }
 
 // 1) grab /zones and find the coordinator for the room being asked for
-// 2) perform an action on that coordinator 
+// 2) perform an action on that coordinator
 function actOnCoordinator(options, actionPath, room, onCompleteFun) {
     options.path = '/zones';
     console.log("getting zones...");
 
     var handleZonesResponse = function (error, responseJson) {
-        if (!error) { 
+        if (!error) {
             responseJson = JSON.parse(responseJson);
             var coordinatorRoomName = findCoordinatorForRoom(responseJson, room);
             options.path = '/' + encodeURIComponent(coordinatorRoomName) + actionPath;
             console.log(options.path);
             httpreq(options, onCompleteFun);
         }
-        else { 
+        else {
             onCompleteFun(error);
         }
     }
@@ -307,7 +359,7 @@ function genericResponse(error, response, success) {
 // Given a room name, returns the name of the coordinator for that room
 function findCoordinatorForRoom(responseJson, room) {
     console.log("finding coordinator for room: " + room);
-    
+
     for (var i = 0; i < responseJson.length; i++) {
         var zone = responseJson[i];
 

@@ -1,4 +1,21 @@
-PlayIntent play {Preset}
+PlayIntent in the {Room} play the {MusicType} {SearchTerm}
+PlayIntent in the {Room} play {SearchTerm}
+PlayIntent play {SearchTerm} in the {Room}
+PlayIntent play {SearchTerm} in {Room}
+PlayIntent play the {SearchTerm}
+PlayIntent play {SearchTerm}
+
+BringMusicIntent bring music to {Room}
+BringMusicIntent bring music to the {Room}
+BringMusicIntent bring the music to {Room}
+BringMusicIntent bring the music to the {Room}
+BringMusicIntent add {Room}
+BringMusicIntent add {Room} to the group
+BringMusicIntent add the {Room}
+BringMusicIntent add the {Room} to the group
+
+DropRoomIntent drop {Room}
+DropRoomIntent drop the {Room}
 
 PlaylistIntent playlist {Preset} in {Room}
 PlaylistIntent playlist {Preset} in the {Room}
@@ -9,8 +26,6 @@ PlaylistIntent start playlist {Preset} in the {Room}
 
 FavoriteIntent favorite {Preset} in {Room}
 FavoriteIntent favorite {Preset} in the {Room}
-FavoriteIntent play {Preset} in {Room}
-FavoriteIntent play {Preset} in the {Room}
 FavoriteIntent play favorite {Preset} in {Room}
 FavoriteIntent play favorite {Preset} in the {Room}
 FavoriteIntent start favorite {Preset} in {Room}
@@ -38,7 +53,7 @@ ResumeIntent resume the music in the {Room}
 PauseAllIntent pause all
 PauseAllIntent pause all the music
 PauseAllIntent stop all
-PauseAllIntent stop all the music 
+PauseAllIntent stop all the music
 
 PauseIntent pause in the {Room}
 PauseIntent pause in {Room}

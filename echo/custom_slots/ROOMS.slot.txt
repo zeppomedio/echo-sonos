@@ -8,8 +8,8 @@ pool
 den
 master bedroom
 tv room
-kitchen main
-kitchen wall
+kitchen
+kitchen
 foyer
 hallway
 bathroom
@@ -17,3 +17,4 @@ guest bathroom
 deck
 porch
 patio
+library

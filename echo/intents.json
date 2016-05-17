@@ -4,12 +4,37 @@
         "intent": "PlayIntent",
         "slots": [
             {
-                "name": "Preset",
-                "type": "PRESETS"
+                "name": "MusicType",
+                "type": "MUSICTYPES"
+            },
+            {
+                "name": "SearchTerm",
+                "type": "SEARCHTERMS"
+            },
+            {
+                "name": "Room",
+                "type": "ROOMS"
             }
         ]
     },
- 
+    {
+        "intent": "BringMusicIntent",
+        "slots": [
+            {
+                "name": "Room",
+                "type": "ROOMS"
+            }
+        ]
+    },
+    {
+        "intent": "DropRoomIntent",
+        "slots": [
+            {
+                "name": "Room",
+                "type": "ROOMS"
+            }
+        ]
+    },
     {
       "intent": "PlaylistIntent",
       "slots": [
@@ -20,10 +45,10 @@
         {
             "name": "Room",
             "type": "ROOMS"
-        }   
+        }
       ]
     },
-  
+
     {
       "intent": "FavoriteIntent",
       "slots": [
@@ -34,7 +59,7 @@
         {
             "name": "Room",
             "type": "ROOMS"
-        }   
+        }
       ]
     },
 
@@ -44,24 +69,24 @@
         {
             "name": "Room",
             "type": "ROOMS"
-        }   
+        }
       ]
     },
-    
+
     {
       "intent": "PauseAllIntent"
     },
-   
+
     {
       "intent": "ResumeIntent",
       "slots": [
          {
             "name": "Room",
             "type": "ROOMS"
-         }   
-       ] 
+         }
+       ]
     },
-    
+
     {
       "intent": "ResumeAllIntent"
     },
@@ -72,17 +97,17 @@
         {
             "name": "Room",
             "type": "ROOMS"
-        }   
+        }
       ]
     },
-    
+
     {
       "intent": "VolumeUpIntent",
       "slots": [
         {
             "name": "Room",
             "type": "ROOMS"
-        }   
+        }
       ]
     },
 
@@ -99,24 +124,24 @@
         }
       ]
     },
-  
+
     {
       "intent": "NextTrackIntent",
       "slots": [
         {
             "name": "Room",
             "type": "ROOMS"
-        }   
+        }
       ]
     },
-  
+
     {
       "intent": "PreviousTrackIntent",
       "slots": [
         {
             "name": "Room",
             "type": "ROOMS"
-        }   
+        }
       ]
     },
 
@@ -126,18 +151,18 @@
         {
             "name": "Room",
             "type": "ROOMS"
-        }   
+        }
       ]
     },
 
-   
+
     {
       "intent": "WhatsPlayingIntent",
       "slots": [
         {
             "name": "Room",
             "type": "ROOMS"
-        }   
+        }
       ]
     },
 
@@ -147,7 +172,7 @@
         {
             "name": "Room",
             "type": "ROOMS"
-        }   
+        }
       ]
     },
 
@@ -157,7 +182,7 @@
         {
             "name": "Room",
             "type": "ROOMS"
-        }   
+        }
       ]
     },
 
