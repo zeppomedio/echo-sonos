@@ -26,7 +26,15 @@ EchoSonos.prototype.intentHandlers = {
         spotifyHandler(
             intent.slots.SearchTerm.value,
             intent.slots.MusicType.value,
-            intent.slots.Room.value,
+            intent.slots.Room.value || '_largestGroup',
+            response);
+    },
+
+    NewsIntent: function (intent, session, response) {
+        console.log("NewsIntent received");
+        newsHandler(
+            intent.slots.NewsStation.value,
+            intent.slots.Room.value || '_largestGroup',
             response);
     },
 
@@ -38,16 +46,6 @@ EchoSonos.prototype.intentHandlers = {
     DropRoomIntent: function(intent, session, response) {
         console.log("DropRoomIntent received");
         dropRoomHandler(intent.slots.Room.value, response);
-    },
-
-    PlaylistIntent: function (intent, session, response) {
-        console.log("PlaylistIntent received");
-        playlistHandler(intent.slots.Room.value, intent.slots.Preset.value, 'playlist', response);
-    },
-
-    FavoriteIntent: function (intent, session, response) {
-        console.log("FavoriteIntent received");
-        playlistHandler(intent.slots.Room.value, intent.slots.Preset.value, 'favorite', response);
     },
 
     ResumeAllIntent: function (intent, session, response) {
@@ -100,14 +98,14 @@ EchoSonos.prototype.intentHandlers = {
     NextTrackIntent: function (intent, session, response) {
         console.log("NextTrackIntent received");
 
-        actOnCoordinator(options, '/next', intent.slots.Room.value,  function (error, responseBodyJson) {
+        actOnCoordinator(options, '/next', intent.slots.Room.value || '_largestGroup',  function (error, responseBodyJson) {
             genericResponse(error, response);
         });
     },
 
     PreviousTrackIntent: function (intent, session, response) {
         console.log("PreviousTrackIntent received");
-        actOnCoordinator(options, '/previous', intent.slots.Room.value,  function (error, responseBodyJson) {
+        actOnCoordinator(options, '/previous', intent.slots.Room.value || '_largestGroup',  function (error, responseBodyJson) {
             genericResponse(error, response);
         });
     },
@@ -169,7 +167,7 @@ EchoSonos.prototype.intentHandlers = {
 }
 
 function spotifyHandler(searchTerm, musicType, roomValue, response) {
-    var path = '/spotify/' + musicType + '/' + encodeURIComponent(searchTerm);
+    var path = '/googleplay/' + musicType + '/' + encodeURIComponent(searchTerm);
 
     // This first action queues up the spotify search
     actOnCoordinator(options, path, roomValue, function(error, responseBodyJson) {
@@ -177,12 +175,30 @@ function spotifyHandler(searchTerm, musicType, roomValue, response) {
             genericResponse(error, response);
             return;
         }
+        genericResponse(error, response, "Playing " + searchTerm);
+        /*
         // The 2nd action actually plays the playlist / favorite
         actOnCoordinator(options, '/play', roomValue, function(error, responseBodyJson) {
             genericResponse(error, response, "Playing " + searchTerm);
         });
+        */
     });
 
+}
+
+function newsHandler(newsStation, roomValue, response) {
+    var path = '/news/' + newsStation;
+    actOnCoordinator(options, path, roomValue, function(error, responseBodyJson) {
+        if (!error) {
+            if (newsStation != undefined) {
+                response.tell("Reading the news from " + newsStation);
+            } else {
+                response.tell("Reading the news");
+            }
+        } else {
+          response.tell(error.message);
+        }
+    });
 }
 
 function bringMusicHandler(roomValue, response) {
@@ -322,14 +338,16 @@ function httpreq(options, responseCallback) {
 
 // 1) grab /zones and find the coordinator for the room being asked for
 // 2) perform an action on that coordinator
-function actOnCoordinator(options, actionPath, room, onCompleteFun) {
+// (if you pass _largestGroup it will pick the largest group rather than a specific
+// room name)
+function actOnCoordinator(options, actionPath, roomOrSpecialCommand, onCompleteFun) {
     options.path = '/zones';
     console.log("getting zones...");
 
     var handleZonesResponse = function (error, responseJson) {
         if (!error) {
             responseJson = JSON.parse(responseJson);
-            var coordinatorRoomName = findCoordinatorForRoom(responseJson, room);
+            var coordinatorRoomName = findCoordinatorForRoom(responseJson, roomOrSpecialCommand);
             options.path = '/' + encodeURIComponent(coordinatorRoomName) + actionPath;
             console.log(options.path);
             httpreq(options, onCompleteFun);
@@ -357,16 +375,18 @@ function genericResponse(error, response, success) {
 }
 
 // Given a room name, returns the name of the coordinator for that room
-function findCoordinatorForRoom(responseJson, room) {
-    console.log("finding coordinator for room: " + room);
+function findCoordinatorForRoom(responseJson, roomOrSpecialCommand) {
+    console.log("finding coordinator for room: " + roomOrSpecialCommand);
 
-    for (var i = 0; i < responseJson.length; i++) {
-        var zone = responseJson[i];
+    var sortedZones = responseJson.sort(function(zoneA, zoneB) {
+        return zoneA.members.length < zoneB.members.length;
+    });
+    for (var i = 0; i < sortedZones.length; i++) {
+        var zone = sortedZones[i];
 
         for (var j = 0; j < zone.members.length; j++) {
             var member = zone.members[j];
-
-            if (member.roomName.toLowerCase() == room.toLowerCase()) {
+            if (roomOrSpecialCommand == '_largestGroup' || member.roomName.toLowerCase() == roomOrSpecialCommand.toLowerCase()) {
                 return zone.coordinator.roomName;
             }
         }

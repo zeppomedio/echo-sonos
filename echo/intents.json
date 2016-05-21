@@ -18,6 +18,19 @@
         ]
     },
     {
+        "intent": "NewsIntent",
+        "slots": [
+            {
+                "name": "NewsStation",
+                "type": "NEWSSTATION"
+            },
+            {
+                "name": "Room",
+                "type": "ROOMS"
+            }
+        ]
+    },
+    {
         "intent": "BringMusicIntent",
         "slots": [
             {
@@ -35,34 +48,6 @@
             }
         ]
     },
-    {
-      "intent": "PlaylistIntent",
-      "slots": [
-        {
-            "name": "Preset",
-            "type": "PRESETS"
-        },
-        {
-            "name": "Room",
-            "type": "ROOMS"
-        }
-      ]
-    },
-
-    {
-      "intent": "FavoriteIntent",
-      "slots": [
-        {
-            "name": "Preset",
-            "type": "PRESETS"
-        },
-        {
-            "name": "Room",
-            "type": "ROOMS"
-        }
-      ]
-    },
-
     {
       "intent": "PauseIntent",
       "slots": [
