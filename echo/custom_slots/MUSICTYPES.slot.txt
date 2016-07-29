@@ -1,0 +1,5 @@
+album
+artist
+song
+track
+station
