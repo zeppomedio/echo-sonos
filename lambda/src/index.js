@@ -167,7 +167,7 @@ EchoSonos.prototype.intentHandlers = {
 }
 
 function spotifyHandler(searchTerm, musicType, roomValue, response) {
-    var path = '/spotify/' + musicType + '/' + encodeURIComponent(searchTerm);
+    var path = '/googleplay/' + musicType + '/' + encodeURIComponent(searchTerm);
 
     // This first action queues up the spotify search
     actOnCoordinator(options, path, roomValue, function(error, responseBodyJson) {
